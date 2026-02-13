@@ -119,7 +119,7 @@
     }
 
     if (roundWon) {
-      statusText.innerText = `Player ${currentPlayer} Wins! 🎉`;
+      statusText.innerText = "Player ${currentPlayer} Wins! 🎉";
       gameActive = false;
       return;
     }
@@ -131,7 +131,7 @@
     }
 
     currentPlayer = currentPlayer === "X" ? "O" : "X";
-    statusText.innerText = `Player ${currentPlayer}'s Turn`;
+    statusText.innerText = "Player ${currentPlayer}'s Turn";
   }
 
   function resetGame() {
