@@ -1,116 +1,139 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Simple Click Game</title>
-    <style>
-        body {
-            text-align: center;
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-        }
+  <title>Mini PUBG Gun Game</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: black;
+      color: white;
+      font-family: Arial;
+    }
 
-        h1 {
-            margin-top: 20px;
-        }
+    canvas {
+      display: block;
+      background: #222;
+    }
 
-        #gameArea {
-            width: 600px;
-            height: 400px;
-            border: 2px solid black;
-            margin: 20px auto;
-            position: relative;
-            background-color: white;
-        }
-
-        #box {
-            width: 50px;
-            height: 50px;
-            background-color: red;
-            position: absolute;
-            cursor: pointer;
-            display: none;
-        }
-
-        #score, #time {
-            font-size: 20px;
-            margin: 10px;
-        }
-
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-    </style>
+    #score {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 20px;
+    }
+  </style>
 </head>
 <body>
 
-    <h1>Click The Box Game 🎯</h1>
+<div id="score">Score: 0</div>
+<canvas id="gameCanvas"></canvas>
 
-    <div id="score">Score: 0</div>
-    <div id="time">Time: 30</div>
-    <button onclick="startGame()">Start Game</button>
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
 
-    <div id="gameArea">
-        <div id="box"></div>
-    </div>
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-    <script>
-        let score = 0;
-        let timeLeft = 30;
-        let timer;
-        let gameRunning = false;
+let score = 0;
+let gameOver = false;
 
-        const box = document.getElementById("box");
-        const scoreDisplay = document.getElementById("score");
-        const timeDisplay = document.getElementById("time");
-        const gameArea = document.getElementById("gameArea");
+const player = {
+  x: canvas.width / 2 - 25,
+  y: canvas.height - 60,
+  width: 50,
+  height: 50,
+  speed: 7
+};
 
-        function startGame() {
-            if (gameRunning) return;
+let bullets = [];
+let enemies = [];
 
-            score = 0;
-            timeLeft = 30;
-            gameRunning = true;
-            scoreDisplay.textContent = "Score: " + score;
-            timeDisplay.textContent = "Time: " + timeLeft;
+document.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowLeft") player.x -= player.speed;
+  if (e.key === "ArrowRight") player.x += player.speed;
 
-            moveBox();
-            box.style.display = "block";
+  if (e.key === " ") {
+    bullets.push({
+      x: player.x + player.width / 2 - 5,
+      y: player.y,
+      width: 10,
+      height: 20
+    });
+  }
+});
 
-            timer = setInterval(function () {
-                timeLeft--;
-                timeDisplay.textContent = "Time: " + timeLeft;
+function spawnEnemy() {
+  enemies.push({
+    x: Math.random() * (canvas.width - 40),
+    y: -40,
+    width: 40,
+    height: 40,
+    speed: 3
+  });
+}
 
-                if (timeLeft <= 0) {
-                    clearInterval(timer);
-                    box.style.display = "none";
-                    alert("Game Over! Your score: " + score);
-                    gameRunning = false;
-                }
-            }, 1000);
-        }
+setInterval(spawnEnemy, 1000);
 
-        function moveBox() {
-            if (!gameRunning) return;
+function update() {
+  if (gameOver) return;
 
-            const maxX = gameArea.clientWidth - box.clientWidth;
-            const maxY = gameArea.clientHeight - box.clientHeight;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            const randomX = Math.floor(Math.random() * maxX);
-            const randomY = Math.floor(Math.random() * maxY);
+  // Draw Player
+  ctx.fillStyle = "green";
+  ctx.fillRect(player.x, player.y, player.width, player.height);
 
-            box.style.left = randomX + "px";
-            box.style.top = randomY + "px";
-        }
+  // Update bullets
+  bullets.forEach((bullet, i) => {
+    bullet.y -= 10;
+    ctx.fillStyle = "yellow";
+    ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
 
-        box.addEventListener("click", function () {
-            if (!gameRunning) return;
-            score++;
-            scoreDisplay.textContent = "Score: " + score;
-            moveBox();
-        });
-    </script>
+    if (bullet.y < 0) bullets.splice(i, 1);
+  });
+
+  // Update enemies
+  enemies.forEach((enemy, ei) => {
+    enemy.y += enemy.speed;
+    ctx.fillStyle = "red";
+    ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+
+    // Collision with player
+    if (
+      enemy.y + enemy.height > player.y &&
+      enemy.x < player.x + player.width &&
+      enemy.x + enemy.width > player.x
+    ) {
+      gameOver = true;
+      alert("Game Over! Score: " + score);
+      location.reload();
+    }
+
+    // Bullet collision
+    bullets.forEach((bullet, bi) => {
+      if (
+        bullet.x < enemy.x + enemy.width &&
+        bullet.x + bullet.width > enemy.x &&
+        bullet.y < enemy.y + enemy.height &&
+        bullet.y + bullet.height > enemy.y
+      ) {
+        enemies.splice(ei, 1);
+        bullets.splice(bi, 1);
+        score++;
+        document.getElementById("score").innerText = "Score: " + score;
+      }
+    });
+
+    if (enemy.y > canvas.height) enemies.splice(ei, 1);
+  });
+
+  requestAnimationFrame(update);
+}
+
+update();
+</script>
 
 </body>
 </html>
