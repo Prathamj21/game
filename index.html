@@ -119,26 +119,26 @@
     }
 
     if (roundWon) {
-      statusText.innerText = "Player ${currentPlayer} Wins! 🎉";
+      statusText.innerText = `Player ${currentPlayer} Wins! 🎉`;
       gameActive = false;
       return;
     }
 
     if (!cells.includes("")) {
-      statusText.innerText = "It's a Draw! 🤝";
+      statusText.innerText = `It's a Draw! 🤝`;
       gameActive = false;
       return;
     }
 
     currentPlayer = currentPlayer === "X" ? "O" : "X";
-    statusText.innerText = "Player ${currentPlayer}'s Turn";
+    statusText.innerText = `Player ${currentPlayer}'s Turn`;
   }
 
   function resetGame() {
     currentPlayer = "X";
     gameActive = true;
     cells = ["", "", "", "", "", "", "", "", ""];
-    statusText.innerText = "Player X's Turn";
+    statusText.innerText = `Player X's Turn`;
     createBoard();
   }
 
